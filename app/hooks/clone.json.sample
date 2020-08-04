@@ -1,0 +1,7 @@
+{
+    "clone": {
+        "clone_dir": "backup.git",
+        "git_url": "{repository/html_url}",
+        "debug_level": "INFO"
+    }
+}
