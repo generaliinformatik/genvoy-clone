@@ -16,12 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-debug_level = "INFO"
-config_file = "clone.json"
-config_context = "clone"
-
-# ------------------------------- DO NOT EDIT BELOW THIS LINE -------------------------------
-
 import os
 import logging
 import time
@@ -30,8 +24,17 @@ from sys import stderr
 import json
 from json import loads
 import git
+
 # the function 'hook_functions' is available from the main genvoy repository (https://github.com/generaliinformatik/genvoy)
 from hook_functions import replace_all_placeholders
+
+# ------------------------------- CONFIG SECTION - DO NOT EDIT AVOVE THIS LINE -------------------------------
+
+debug_level = "INFO"
+config_file = "clone.json"
+config_context = "clone"
+
+# ------------------------------- CONFIG SECTION - DO NOT EDIT BELOW THIS LINE -------------------------------
 
 logging.basicConfig(stream=stderr, level=logging.INFO)
 
@@ -41,7 +44,7 @@ timestamp = time.strftime("%Y%m%d-%H%M%S")
 mypath = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 config_file_plain = os.path.splitext(os.path.basename(__file__))[0]
-config_file = mypath + '/' + config_file_plain + '.json'
+config_file = mypath + "/" + config_file_plain + ".json"
 
 # config_file = mypath + '/' + config_file
 # alternativly you can use 'eventy_type`als a dynamic variable to read configuration settings, e.g.:
@@ -51,11 +54,13 @@ config_file = mypath + '/' + config_file_plain + '.json'
 #   config_file = mypath + '/' + config_file_prefix + '.json'
 
 # Load config
-with open(config_file, 'r') as cfg:
+with open(config_file, "r") as cfg:
     config = loads(cfg.read())
 
 debug_level_old = debug_level
-debug_level = str(replace_all_placeholders("{%s/debug_level}" % (config_context), config, ""))
+debug_level = str(
+    replace_all_placeholders("{%s/debug_level}" % (config_context), config, "")
+)
 if debug_level != debug_level_old:
     if debug_level == "DEBUG":
         logging.getLogger().setLevel(logging.DEBUG)
@@ -74,15 +79,15 @@ if debug_level != debug_level_old:
 logging.debug("%s: config file '%s'", event_type, config_file)
 
 # read config settings
-#clone_dir = config.get('clone_dir', "git")
+# clone_dir = config.get('clone_dir', "git")
 clone_dir = replace_all_placeholders("{%s/clone_dir}" % (config_context), config, "")
 logging.debug("config read - 'clone_dir': %s", event_type, clone_dir)
-#git_url = config.get('git_url', "{repository/html_url}")
+# git_url = config.get('git_url', "{repository/html_url}")
 git_url = replace_all_placeholders("{%s/git_url}" % (config_context), config, "")
 logging.debug("config read - 'git_url': %s", event_type, git_url)
 
 # get event payload
-with open(sys.argv[1], 'r') as jsf:
+with open(sys.argv[1], "r") as jsf:
     payload = json.loads(jsf.read())
 
 # repleace placeholder from config to real github html url
@@ -93,7 +98,7 @@ if not os.path.exists(clone_dir):
     try:
         os.mkdir(clone_dir)
     except OSError:
-        logging.error ("Creation of the directory %s failed" % clone_dir)
+        logging.error("Creation of the directory %s failed" % clone_dir)
     else:
         logging.debug("Successfully created the directory %s " % clone_dir)
 
@@ -102,12 +107,12 @@ if os.path.isdir(clone_dir):
     # clone only public repositories
     if replace_all_placeholders("{repository/private}", payload, event_type) == "False":
         # clone repository as useable file structure
-        clone_dir = clone_dir + '/' + timestamp + '/'
-        
+        clone_dir = clone_dir + "/" + timestamp + "/"
+
         try:
             os.mkdir(clone_dir)
             logging.info("create dir: %s", clone_dir)
-        except:
+        except Exception:
             logging.error("Failed to create dir: %s", clone_dir)
 
         logging.info("Cloning reposirtory: %s", git_url)
@@ -116,4 +121,4 @@ if os.path.isdir(clone_dir):
     else:
         logging.error("Abort. Clone base dir not existing (%s)", clone_dir)
 else:
-        logging.error("Abort. Repository ist private.")
+    logging.error("Abort. Repository ist private.")
