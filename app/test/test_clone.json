@@ -1,0 +1,14 @@
+{
+    "id": 0,
+    "repository": {
+        "id": 0,
+        "node_id": "none",
+        "name": "not_existing",
+        "full_name": "generaliinformatik/not_existing",
+        "private": false,
+        "html_url": "https://github.com/generaliinformatik/not_existing",
+        "description": "a dummy entry to codecov the script",
+        "git_url": "git://github.com/generaliinformatik/not_existing.git",
+        "organization": "test"
+    }
+}

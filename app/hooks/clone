@@ -25,9 +25,6 @@ import json
 from json import loads
 import git
 
-# the function 'hook_functions' is available from the main genvoy repository (https://github.com/generaliinformatik/genvoy)
-from hook_functions import replace_all_placeholders
-
 # ------------------------------- CONFIG SECTION - DO NOT EDIT AVOVE THIS LINE -------------------------------
 
 debug_level = "INFO"
@@ -38,10 +35,17 @@ config_context = "clone"
 
 logging.basicConfig(stream=stderr, level=logging.INFO)
 
-json_file = sys.argv[1]
-event_type = sys.argv[2]
-timestamp = time.strftime("%Y%m%d-%H%M%S")
 mypath = os.path.dirname(os.path.realpath(sys.argv[0]))
+timestamp = time.strftime("%Y%m%d-%H%M%S")
+
+try:
+    json_file = sys.argv[1]
+    event_type = sys.argv[2]
+    # the function 'hook_functions' is available from the main genvoy repository (https://github.com/generaliinformatik/genvoy)
+    from hook_functions import replace_all_placeholders
+except Exception:
+    logging.error("Required parameters missing. Nothing to do.")
+    sys.exit(0)
 
 config_file_plain = os.path.splitext(os.path.basename(__file__))[0]
 config_file = mypath + "/" + config_file_plain + ".json"
@@ -82,12 +86,14 @@ logging.debug("%s: config file '%s'", event_type, config_file)
 # clone_dir = config.get('clone_dir', "git")
 clone_dir = replace_all_placeholders("{%s/clone_dir}" % (config_context), config, "")
 logging.debug("config read - 'clone_dir': %s", event_type, clone_dir)
+create_dir = replace_all_placeholders("{%s/create_dir}" % (config_context), config, 1)
+logging.debug("config read - 'create_dir': %s", (create_dir))
 # git_url = config.get('git_url', "{repository/html_url}")
 git_url = replace_all_placeholders("{%s/git_url}" % (config_context), config, "")
-logging.debug("config read - 'git_url': %s", event_type, git_url)
+logging.debug("config read - 'git_url': %s", git_url)
 
 # get event payload
-with open(sys.argv[1], "r") as jsf:
+with open(json_file, "r") as jsf:
     payload = json.loads(jsf.read())
 
 # repleace placeholder from config to real github html url
@@ -95,12 +101,12 @@ git_url = replace_all_placeholders(git_url, payload, event_type)
 
 # try to create dir
 if not os.path.exists(clone_dir):
-    try:
-        os.mkdir(clone_dir)
-    except OSError:
-        logging.error("Creation of the directory %s failed" % clone_dir)
-    else:
-        logging.debug("Successfully created the directory %s " % clone_dir)
+    if create_dir == "1":
+        try:
+            os.mkdir(clone_dir)
+            logging.debug("Directory '%s' created successfully." % clone_dir)
+        except OSError:
+            logging.error("Directory '%s' could not be created." % clone_dir)
 
 # check if dir exists (before or after creation)
 if os.path.isdir(clone_dir):
@@ -111,14 +117,17 @@ if os.path.isdir(clone_dir):
 
         try:
             os.mkdir(clone_dir)
-            logging.info("create dir: %s", clone_dir)
+            logging.debug("Directory '%s' created successfully." % clone_dir)
         except Exception:
-            logging.error("Failed to create dir: %s", clone_dir)
+            logging.error("Directory '%s' could not be created." % clone_dir)
 
         logging.info("Cloning reposirtory: %s", git_url)
         logging.info("Cloning to dir: %s", clone_dir)
-        git.Git(clone_dir).clone(git_url)
+        try:
+            git.Git(clone_dir).clone(git_url)
+        except Exception:
+            logging.error("Remote repository could not be cloned. Abort.")
     else:
-        logging.error("Abort. Clone base dir not existing (%s)", clone_dir)
+        logging.error("Remote repository is not public. Abort.")
 else:
-    logging.error("Abort. Repository ist private.")
+    logging.error("Clone base dir not existing (%s). Abort.", clone_dir)

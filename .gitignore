@@ -1,3 +1,7 @@
-*.json
+.coverage
 docs/images/*.pxm
 .pytest_cache/
+app/hooks/__pycache__
+app/hooks/__pycache__/
+app/hooks/test/__pycache__
+app/hooks/test/__pycache__/

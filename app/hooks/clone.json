@@ -1,6 +1,7 @@
 {
     "clone": {
         "clone_dir": "backup.git",
+        "create_dir": 1,
         "git_url": "{repository/html_url}",
         "debug_level": "INFO"
     }
