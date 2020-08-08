@@ -1,3 +1,4 @@
+![Travis CI](https://travis-ci.org/generaliinformatik/genvoy-clone.svg?branch=master) [![codecov](https://codecov.io/gh/generaliinformatik/genvoy-clone/branch/master/graph/badge.svg)](https://codecov.io/gh/generaliinformatik/genvoy-clone)
 
 # Genvoy - Clone
 <a id="markdown-genvoy---clone" name="genvoy---clone"></a>
